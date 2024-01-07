@@ -1,0 +1,35 @@
+allprojects {
+    group "dev.ein.cloudnet.module.management-socket"
+    version = "1.0-SNAPSHOT"
+
+    repositories {
+        mavenCentral()
+        maven { url = 'https://repo.cloudnetservice.eu/repository/releases/' }
+        maven { url = 'https://oss.sonatype.org/content/repositories/snapshots/' }
+    }
+
+    project.ext {
+        dependencyVersionCloudNet = '3.4.5-RELEASE'
+        dependencyVersionLombok = '1.18.22'
+        dependencyVersionJunixSocket = '2.8.3'
+
+        cliFile = 'cloudnet-client.jar'
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+
+    compileJava {
+        options.encoding = 'UTF-8'
+    }
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    dependencies {
+        compileOnly group: 'org.projectlombok', name: 'lombok', version: dependencyVersionLombok
+        annotationProcessor group: 'org.projectlombok', name: 'lombok', version: dependencyVersionLombok
+        implementation group: 'com.kohlschutter.junixsocket', name: 'junixsocket-core', version: dependencyVersionJunixSocket
+    }
+}

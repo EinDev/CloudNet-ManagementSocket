@@ -1,0 +1,5 @@
+rootProject.name = "cloudnet-module-management-socket-root"
+include 'cli'
+include 'shared'
+include 'module'
+

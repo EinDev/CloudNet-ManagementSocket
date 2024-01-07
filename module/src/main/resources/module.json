@@ -1,0 +1,25 @@
+{
+  "runtimeModule": true,
+  "group": "dev.ein.cloudnet.module",
+  "name": "CloudNet-ManagementSocket",
+  "version": "1.0",
+  "author": "EinDev",
+  "website": "https://ein.dev",
+  "description": "CloudNet extension, which adds a management socket",
+  "main": "dev.ein.cloudnet.managementsocket.module.CloudNetManagementSocketModule",
+  "storesSensitiveData": false,
+  "dependencies": [
+    {
+      "group": "com.kohlschutter.junixsocket",
+      "name": "junixsocket-common",
+      "version": "2.8.3",
+      "repo": "maven"
+    },
+    {
+      "group": "com.kohlschutter.junixsocket",
+      "name": "junixsocket-native-common",
+      "version": "2.8.3",
+      "repo": "maven"
+    }
+  ]
+}
