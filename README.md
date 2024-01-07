@@ -13,7 +13,7 @@ This resource allows you to manage CloudNet using a client-server architecture
 
 
 ## Installation
-The installation is done by moving the file [cloudnet-managementsocket.jar](https://github.com/EinDev/CloudNet-ManagementSocke/releases/latest/download/cloudnet-managementsocket.jar) to the `modules` folder of CloudNet.
+The installation is done by moving the file [cloudnet-managementsocket.jar](https://github.com/EinDev/CloudNet-ManagementSocket/releases/latest/download/cloudnet-managementsocket.jar) to the `modules` folder of CloudNet.
 It generated a config file, where you can specify where it should place the socket file.
 Then you can start your node as usual. You don't need to use the screen anymore for anything except if you want to stop the node.
 
