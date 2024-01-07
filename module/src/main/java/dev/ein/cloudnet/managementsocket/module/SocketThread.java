@@ -5,6 +5,7 @@ import de.dytanic.cloudnet.common.logging.LogLevel;
 import dev.ein.cloudnet.managementsocket.shared.command.Command;
 import org.checkerframework.checker.units.qual.C;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -36,15 +37,17 @@ public class SocketThread extends Thread {
                    out.writeObject(handler.handleCommand((Command) data));
                } catch (ClassNotFoundException e) {
                    CloudNetManagementSocketModule.getInstance().getLogger().log(LogLevel.WARNING, "Got unknown class: " + e.getClass().getName());
+               } catch (EOFException e) {
+                   return; // Client closed the connection
                }
            }
         } catch (IOException ex) {
-            CloudNetManagementSocketModule.getInstance().getLogger().log(LogLevel.WARNING, "Caught Exception during socket handling", ex);
+            CloudNetManagementSocketModule.getInstance().getLogger().log(LogLevel.WARNING, "Caught Exception during socket handling: ", ex);
         } finally {
             try {
                 socket.close();
             } catch (IOException ex) {
-                CloudNetManagementSocketModule.getInstance().getLogger().log(LogLevel.WARNING, "Caught Exception during socket handling", ex);
+                CloudNetManagementSocketModule.getInstance().getLogger().log(LogLevel.WARNING, "Caught Exception during socket handling: ", ex);
             }
         }
     }
