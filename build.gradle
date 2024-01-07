@@ -1,3 +1,9 @@
+plugins {
+  id 'org.cadixdev.licenser' version '0.6.1' apply false
+}
+
+defaultTasks 'build', 'checkLicenses', 'shadowJar'
+
 allprojects {
     group "dev.ein.cloudnet.module.management-socket"
     version = "1.1-RELEASE"
@@ -19,6 +25,7 @@ allprojects {
 
 subprojects {
     apply plugin: 'java'
+    apply plugin: 'org.cadixdev.licenser'
 
     compileJava {
         options.encoding = 'UTF-8'
@@ -31,5 +38,10 @@ subprojects {
         compileOnly group: 'org.projectlombok', name: 'lombok', version: dependencyVersionLombok
         annotationProcessor group: 'org.projectlombok', name: 'lombok', version: dependencyVersionLombok
         implementation group: 'com.kohlschutter.junixsocket', name: 'junixsocket-core', version: dependencyVersionJunixSocket
+    }
+
+    license {
+      include '**/*.java'
+      header = project.rootProject.file('LICENSE_HEADER')
     }
 }

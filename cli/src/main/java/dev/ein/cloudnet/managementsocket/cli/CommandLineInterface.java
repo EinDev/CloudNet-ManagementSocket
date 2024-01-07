@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019-2024 CloudNetService team & contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package dev.ein.cloudnet.managementsocket.cli;
 
 import de.dytanic.cloudnet.console.IConsole;
@@ -14,7 +30,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.UUID;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -24,26 +43,25 @@ public class CommandLineInterface {
         CommandLineParser parser = new DefaultParser();
         Options options = new Options();
         Option socketFilename = new Option("s", "socket", true, "Socket file to use");
-        socketFilename.setRequired(true);
+        socketFilename.setRequired(false);
         options.addOption(socketFilename);
         Lock consoleStopIssued = new ReentrantLock();
         ExecutorService socketExec = Executors.newFixedThreadPool(1);
         try {
             CommandLine commandLine = parser.parse(options, args);
-            String cmd = String.join(" ", commandLine.getArgList());
-            File socketFile = new File(commandLine.getOptionValue("socket"));
+            File socketFile = new File(commandLine.getOptionValue("socket", "./control.socket"));
             try (AFUNIXSocket socket = AFUNIXSocket.newInstance()) {
                 socket.connect(AFUNIXSocketAddress.of(socketFile), 5000);
                 ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
                 LinkedBlockingQueue<Response> responseQueue = new LinkedBlockingQueue<>();
                 new Thread(() -> {
-                    while(socket.isConnected()) {
+                    while (socket.isConnected()) {
                         try {
                             Object data = in.readObject();
-                            if(data instanceof LogMessage) {
+                            if (data instanceof LogMessage) {
                                 console.writeLine(((LogMessage) data).getLineColored());
-                            } else if(data instanceof Response) {
+                            } else if (data instanceof Response) {
                                 responseQueue.put((Response) data);
                             } else {
                                 console.writeLine("[ERROR] Got unknown message class: " + data.getClass().getName());

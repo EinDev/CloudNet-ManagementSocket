@@ -16,6 +16,9 @@ jobs:
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
 
+      - name: Validate license headers
+        run: ./gradlew checkLicenses
+
       - name: Package jars
         run: ./gradlew shadowJar
 
