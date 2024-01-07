@@ -1,7 +1,10 @@
 package dev.ein.cloudnet.managementsocket.module;
 
+import com.google.common.eventbus.EventBus;
 import de.dytanic.cloudnet.CloudNet;
+import de.dytanic.cloudnet.common.logging.AbstractLogHandler;
 import de.dytanic.cloudnet.common.logging.LogLevel;
+import de.dytanic.cloudnet.console.log.ColouredLogFormatter;
 import de.dytanic.cloudnet.driver.module.ModuleLifeCycle;
 import de.dytanic.cloudnet.driver.module.ModuleTask;
 import de.dytanic.cloudnet.module.NodeCloudNetModule;
@@ -14,6 +17,9 @@ public class CloudNetManagementSocketModule extends NodeCloudNetModule {
     private static CloudNetManagementSocketModule instance;
     private String socketPath = "/var/run/cloudnet.socket";
     private ServerSocketThread serverSocketThread;
+    @Getter
+    private EventBus logEventBus = new EventBus();
+    private AbstractLogHandler logHandler = new RemoteConsoleLogHandler(s -> logEventBus.post(s)).setFormatter(new ColouredLogFormatter());
 
     public CloudNetManagementSocketModule() {
         instance = this;
@@ -33,11 +39,13 @@ public class CloudNetManagementSocketModule extends NodeCloudNetModule {
         File socketFile = new File(socketPath);
         serverSocketThread = new ServerSocketThread(socketFile, new CommandHandler(CloudNetManagementSocketModule.getInstance().getLogger(), CloudNet.getInstance()));
         serverSocketThread.start();
+        this.getLogger().addLogHandler(logHandler);
     }
 
     @ModuleTask(event = ModuleLifeCycle.STOPPED)
     public void teardownSocket() {
         ensureSocketStopped();
+        this.getLogger().removeLogHandler(logHandler);
     }
 
     private void ensureSocketStopped() {

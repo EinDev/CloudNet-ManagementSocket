@@ -6,6 +6,6 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class ErrorResult implements Response {
-    private String errorMessage;
+public class TabCompletionResponse implements Response {
+    String[] tabCompletions;
 }
