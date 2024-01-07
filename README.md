@@ -13,7 +13,7 @@ This resource allows you to manage CloudNet using a client-server architecture
 
 
 ## Installation
-The installation is done by moving the file [cloudnet-managementsocket.jar](releases/latest/download/cloudnet-managementsocket.jar) to the `modules` folder of CloudNet.
+The installation is done by moving the file [cloudnet-managementsocket.jar](https://github.com/EinDev/CloudNet-ManagementSocke/releases/latest/download/cloudnet-managementsocket.jar) to the `modules` folder of CloudNet.
 It generated a config file, where you can specify where it should place the socket file.
 Then you can start your node as usual. You don't need to use the screen anymore for anything except if you want to stop the node.
 
@@ -30,7 +30,7 @@ As of right now there is no authentication or encryption inside the socket. Plea
 ````
 
 ## Usage
-To use the module, you need the second file, [cloudnet-client.jar](releases/latest/download/cloudnet-client.jar).
+To use the module, you need the second file, [cloudnet-client.jar](https://github.com/EinDev/CloudNet-ManagementSocket/releases/latest/download/cloudnet-client.jar).
 If you are using the default socket path, you can just run the JAR inside the root directory of CloudNet.
 If not, you can use `java -jar cloudnet-client.jar -s /path/to/your/cloudnet.socket` to specify the socket path.
 If you want to simply use it as the command `cloudnet`, you can add an alias to your `~/.bashrc`:
