@@ -1,0 +1,26 @@
+buildscript {
+    repositories {
+        gradlePluginPortal()
+    }
+    dependencies {
+        classpath 'com.github.johnrengelman:shadow:8.1.1'
+    }
+}
+
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: "java"
+
+jar {
+    manifest {
+        attributes 'Main-Class': "dev.ein.cloudnet.managementsocket.cli.CommandLineInterface"
+    }
+}
+
+shadowJar {
+    archiveFileName.set(cliFile)
+}
+
+dependencies {
+    implementation project(':shared')
+    implementation group: 'commons-cli', name: 'commons-cli', version: '1.3.1'
+}

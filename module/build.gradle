@@ -1,0 +1,20 @@
+buildscript {
+    repositories {
+        gradlePluginPortal()
+    }
+    dependencies {
+        classpath 'com.github.johnrengelman:shadow:8.1.1'
+    }
+}
+
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: "java"
+
+shadowJar {
+    archiveFileName.set("cloudnet-managementsocket.jar")
+}
+
+dependencies {
+    implementation project(':shared')
+    shadow group: 'de.dytanic.cloudnet', name: 'cloudnet', version: dependencyVersionCloudNet
+}
