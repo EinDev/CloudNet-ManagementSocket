@@ -24,59 +24,75 @@ import de.dytanic.cloudnet.console.log.ColouredLogFormatter;
 import de.dytanic.cloudnet.driver.module.ModuleLifeCycle;
 import de.dytanic.cloudnet.driver.module.ModuleTask;
 import de.dytanic.cloudnet.module.NodeCloudNetModule;
+import dev.ein.cloudnet.managementsocket.shared.command.Util;
+import dev.ein.cloudnet.managementsocket.shared.command.commands.DisconnectRequest;
+import dev.ein.cloudnet.managementsocket.shared.command.commands.LogMessage;
 import lombok.Getter;
 
 import java.io.File;
+import java.io.IOException;
 
 public class CloudNetManagementSocketModule extends NodeCloudNetModule {
-    @Getter
-    private static CloudNetManagementSocketModule instance;
-    private String socketPath = "./control.socket";
-    private ServerSocketThread serverSocketThread;
-    @Getter
-    private EventBus logEventBus = new EventBus();
-    private AbstractLogHandler logHandler = new RemoteConsoleLogHandler(s -> logEventBus.post(s)).setFormatter(new ColouredLogFormatter());
+  @Getter
+  private static CloudNetManagementSocketModule instance;
+  private String socketPath = "./control.socket";
+  private ServerSocketThread serverSocketThread;
+  @Getter
+  private EventBus eventBus = new EventBus();
+  private AbstractLogHandler logHandler = new RemoteConsoleLogHandler(s -> eventBus.post(new LogMessage(s))).setFormatter(new ColouredLogFormatter());
 
-    public CloudNetManagementSocketModule() {
-        instance = this;
-    }
+  public CloudNetManagementSocketModule() {
+    instance = this;
+  }
 
-    @ModuleTask(order = 126, event = ModuleLifeCycle.LOADED)
-    public void initConfig() {
-        socketPath = this.getConfig().getString("socketPath", socketPath);
+  @SuppressWarnings("unused")
+  @ModuleTask(order = 126, event = ModuleLifeCycle.LOADED)
+  public void initConfig() {
+    socketPath = this.getConfig().getString("socketPath", socketPath);
 
-        this.saveConfig();
-    }
+    this.saveConfig();
+  }
 
-    @ModuleTask(event = ModuleLifeCycle.STARTED)
-    public void initSocket() {
-        ensureSocketStopped();
-        CloudNetManagementSocketModule.getInstance().getLogger().log(LogLevel.INFO, "Starting Socket " + socketPath);
-        File socketFile = new File(socketPath);
-        serverSocketThread = new ServerSocketThread(socketFile, new CommandHandler(CloudNetManagementSocketModule.getInstance().getLogger(), CloudNet.getInstance()));
-        serverSocketThread.start();
-        this.getLogger().addLogHandler(logHandler);
-    }
+  @SuppressWarnings("unused")
+  @ModuleTask(event = ModuleLifeCycle.STARTED)
+  public void initSocket() {
+    ensureSocketStopped();
+    CloudNetManagementSocketModule.getInstance().getLogger().log(LogLevel.INFO, "Starting Socket " + socketPath);
+    File socketFile = new File(socketPath);
+    serverSocketThread = new ServerSocketThread(socketFile, new CommandHandler(CloudNetManagementSocketModule.getInstance().getLogger(), CloudNet.getInstance()));
+    serverSocketThread.start();
+    this.getLogger().addLogHandler(logHandler);
+  }
 
-    @ModuleTask(event = ModuleLifeCycle.STOPPED)
-    public void teardownSocket() {
-        ensureSocketStopped();
-        this.getLogger().removeLogHandler(logHandler);
-    }
+  @SuppressWarnings("unused")
+  @ModuleTask(event = ModuleLifeCycle.STOPPED)
+  public void teardownSocket() {
+    ensureSocketStopped();
+    this.getLogger().removeLogHandler(logHandler);
+  }
 
-    private void ensureSocketStopped() {
-        if (serverSocketThread != null && serverSocketThread.isAlive()) {
-            CloudNetManagementSocketModule.getInstance().getLogger().log(LogLevel.INFO, "Stopping Socket " + socketPath);
-            try {
-                serverSocketThread.interrupt();
-                serverSocketThread.join(5000);
-                if (serverSocketThread.isAlive()) {
-                    CloudNetManagementSocketModule.getInstance().getLogger().log(LogLevel.ERROR, "SocketThread still alive even after 5s. Interrupting");
-                }
-            } catch (InterruptedException ex) {
-                CloudNetManagementSocketModule.getInstance().getLogger().log(LogLevel.WARNING, "Caught Exception during socket closing", ex);
-            }
+  private void ensureSocketStopped() {
+    if (serverSocketThread != null && serverSocketThread.isAlive()) {
+      eventBus.post(new DisconnectRequest("Master process exiting"));
+      try {
+        Thread.sleep(100); // Wait for clients to recieve the disconnect request
+      } catch (InterruptedException ignored) {}
+      try {
+        serverSocketThread.shutdown();
+      } catch (IOException e) {
+        CloudNetManagementSocketModule.getInstance().getLogger().log(LogLevel.ERROR, "Caught exception while shutting down socket", e);
+      }
+      CloudNetManagementSocketModule.getInstance().getLogger().log(LogLevel.INFO, "Stopping Socket " + socketPath);
+      try {
+        serverSocketThread.join(5000);
+        if (serverSocketThread.isAlive()) {
+          CloudNetManagementSocketModule.getInstance().getLogger().warning("ServerSocketThread still running after 5s. Stack trace: ");
+          CloudNetManagementSocketModule.getInstance().getLogger().warning(Util.getStackTrace(serverSocketThread));
         }
+      } catch (InterruptedException ex) {
+        CloudNetManagementSocketModule.getInstance().getLogger().log(LogLevel.WARNING, "Caught Exception during socket closing", ex);
+      }
     }
+  }
 
 }

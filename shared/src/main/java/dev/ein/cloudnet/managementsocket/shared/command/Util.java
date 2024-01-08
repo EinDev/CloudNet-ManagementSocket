@@ -20,6 +20,8 @@ import lombok.experimental.UtilityClass;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 @UtilityClass
 public class Util {
@@ -27,5 +29,10 @@ public class Util {
         StringWriter sw = new StringWriter();
         ball.printStackTrace(new PrintWriter(sw));
         return sw.toString();
+    }
+
+    public String getStackTrace(Thread t) {
+      StackTraceElement[] elements = t.getStackTrace();
+      return Arrays.stream(elements).map(StackTraceElement::toString).collect(Collectors.joining("\n"));
     }
 }
