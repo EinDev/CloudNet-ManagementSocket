@@ -14,30 +14,7 @@
  * limitations under the License.
  */
 
-package dev.ein.cloudnet.managementsocket.module;
+package dev.ein.cloudnet.managementsocket.cli;
 
-import lombok.AllArgsConstructor;
-
-import java.util.function.Consumer;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
-
-@AllArgsConstructor
-public class RemoteConsoleLogHandler extends Handler {
-    private Consumer<String> consumer;
-
-  @Override
-  public void publish(LogRecord record) {
-    consumer.accept(this.getFormatter().format(record));
-  }
-
-  @Override
-  public void flush() {
-
-  }
-
-  @Override
-  public void close() throws SecurityException {
-
-  }
+public class NewInterface {
 }

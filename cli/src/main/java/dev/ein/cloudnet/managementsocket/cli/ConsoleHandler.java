@@ -16,14 +16,13 @@
 
 package dev.ein.cloudnet.managementsocket.cli;
 
-import de.dytanic.cloudnet.common.Properties;
-import de.dytanic.cloudnet.console.IConsole;
 import dev.ein.cloudnet.managementsocket.shared.command.Response;
 import dev.ein.cloudnet.managementsocket.shared.command.Util;
 import dev.ein.cloudnet.managementsocket.shared.command.commands.CommandExecutedResponse;
 import dev.ein.cloudnet.managementsocket.shared.command.commands.TabCompletionRequest;
 import dev.ein.cloudnet.managementsocket.shared.command.commands.TabCompletionResponse;
 import dev.ein.cloudnet.managementsocket.shared.command.commands.TextBasedRequest;
+import eu.cloudnetservice.node.console.JLine3Console;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -45,7 +44,7 @@ public class ConsoleHandler {
   private final ExecutorService socketExec;
   private final ObjectOutputStream out;
   private final LinkedBlockingQueue<Response> responseQueue;
-  private final IConsole console;
+  private final JLine3Console console;
 
   public void commandHandler(String commandLine) {
     if (commandLine.equals("exit") || commandLine.equals("stop") || commandLine.equals("shutdown")) {
@@ -74,15 +73,15 @@ public class ConsoleHandler {
       }
     } catch (IOException e) {
       console.writeLine("[ERROR] An error occured sending the command");
-      console.write(Util.getStackTrace(e));
+      console.writeLine(Util.getStackTrace(e));
     }
   }
 
-  public Collection<String> tabCompletionHandler(String commandLine, String[] args, Properties properties) {
+  public Collection<String> tabCompleteHandler(String commandLine) {
     try {
       return socketExec.submit(() -> handleTabComplete(commandLine)).get();
-    } catch (InterruptedException | ExecutionException e) {
-      console.writeLine("[ERROR] Unable to get tab completions");
+    } catch (InterruptedException|ExecutionException e) {
+      console.writeLine(String.format("[ERROR] Caught exception while handling tab completion for '%s'", commandLine));
       console.writeLine(Util.getStackTrace(e));
       return Collections.emptyList();
     }
@@ -101,7 +100,7 @@ public class ConsoleHandler {
       }
     } catch (IOException e) {
       console.writeLine("[ERROR] An error occured sending the command");
-      console.write(Util.getStackTrace(e));
+      console.writeLine(Util.getStackTrace(e));
     }
     return Collections.emptyList();
   }

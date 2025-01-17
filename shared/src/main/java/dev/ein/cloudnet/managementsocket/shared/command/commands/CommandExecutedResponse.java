@@ -23,4 +23,5 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class CommandExecutedResponse implements Response {
+  String[] response;
 }

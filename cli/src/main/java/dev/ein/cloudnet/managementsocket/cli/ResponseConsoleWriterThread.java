@@ -16,11 +16,11 @@
 
 package dev.ein.cloudnet.managementsocket.cli;
 
-import de.dytanic.cloudnet.console.IConsole;
 import dev.ein.cloudnet.managementsocket.shared.command.Response;
 import dev.ein.cloudnet.managementsocket.shared.command.Util;
 import dev.ein.cloudnet.managementsocket.shared.command.commands.DisconnectRequest;
 import dev.ein.cloudnet.managementsocket.shared.command.commands.LogMessage;
+import eu.cloudnetservice.node.console.JLine3Console;
 import lombok.AllArgsConstructor;
 import org.newsclub.net.unix.AFUNIXSocket;
 import org.newsclub.net.unix.SocketClosedException;
@@ -34,7 +34,7 @@ import java.util.concurrent.locks.Lock;
 @AllArgsConstructor
 public class ResponseConsoleWriterThread extends Thread {
   private final AFUNIXSocket socket;
-  private final IConsole console;
+  private final JLine3Console console;
   private final LinkedBlockingQueue<Response> responseQueue;
   private final Lock consoleStopIssued;
 

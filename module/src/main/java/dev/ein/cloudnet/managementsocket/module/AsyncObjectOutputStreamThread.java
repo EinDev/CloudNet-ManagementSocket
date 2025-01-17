@@ -16,10 +16,10 @@
 
 package dev.ein.cloudnet.managementsocket.module;
 
-import de.dytanic.cloudnet.common.logging.ILogger;
-import de.dytanic.cloudnet.common.logging.LogLevel;
 import dev.ein.cloudnet.managementsocket.shared.command.Response;
 import org.newsclub.net.unix.SocketClosedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -31,11 +31,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class AsyncObjectOutputStreamThread extends Thread {
   private final BlockingQueue<Response> responses = new LinkedBlockingQueue<>();
   private final ObjectOutputStream out;
-  private final ILogger logger;
+  protected static final Logger LOGGER = LoggerFactory.getLogger(AsyncObjectOutputStreamThread.class);
 
-  public AsyncObjectOutputStreamThread(OutputStream out, ILogger logger) throws IOException {
+  public AsyncObjectOutputStreamThread(OutputStream out) throws IOException {
     this.out = new ObjectOutputStream(out);
-    this.logger = logger;
   }
 
   @Override
@@ -49,7 +48,7 @@ public class AsyncObjectOutputStreamThread extends Thread {
       } catch (EOFException | InterruptedException | SocketClosedException e) {
         continueRunning = false;
       } catch (IOException e) {
-        logger.log(LogLevel.ERROR, "Caught Exception while writing object: ", e);
+        LOGGER.error("Caught Exception while writing object: ", e);
       }
     }
   }

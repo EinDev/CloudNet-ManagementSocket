@@ -16,8 +16,11 @@
 
 package dev.ein.cloudnet.managementsocket.module;
 
-import de.dytanic.cloudnet.common.logging.LogLevel;
+import jakarta.inject.Inject;
+import lombok.NonNull;
 import org.newsclub.net.unix.AFUNIXServerSocket;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,8 +33,12 @@ public class ServerSocketThread extends Thread {
   private final CommandHandler handler;
   private final AtomicBoolean continueRunning = new AtomicBoolean(true);
   private AFUNIXServerSocket ss;
+  protected static final Logger LOGGER = LoggerFactory.getLogger(ServerSocketThread.class);
 
-  ServerSocketThread(File socketFile, CommandHandler handler) {
+  @Inject
+  ServerSocketThread(
+    File socketFile,
+    @NonNull CommandHandler handler) {
     this.socketFile = socketFile;
     this.handler = handler;
   }
@@ -48,16 +55,16 @@ public class ServerSocketThread extends Thread {
           thread.start();
         } catch (SocketException ignored) { // Socket got closed
         } catch (IOException ex) {
-          CloudNetManagementSocketModule.getInstance().getLogger().log(LogLevel.WARNING, "Caught Exception during socket handling", ex);
+          LOGGER.warn("Caught Exception during socket handling", ex);
         }
       }
     } catch (IOException ex) {
-      CloudNetManagementSocketModule.getInstance().getLogger().log(LogLevel.WARNING, "Caught Exception during socket handling", ex);
+      LOGGER.warn("Caught Exception during socket handling", ex);
     } finally {
       try {
         if (ss != null) ss.close();
       } catch (IOException ex) {
-        CloudNetManagementSocketModule.getInstance().getLogger().log(LogLevel.WARNING, "Caught Exception during socket handling", ex);
+        LOGGER.warn("Caught Exception during socket handling", ex);
       }
     }
   }

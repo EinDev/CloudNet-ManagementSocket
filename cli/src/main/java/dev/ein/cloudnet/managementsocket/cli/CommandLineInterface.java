@@ -16,16 +16,20 @@
 
 package dev.ein.cloudnet.managementsocket.cli;
 
-import de.dytanic.cloudnet.console.IConsole;
-import de.dytanic.cloudnet.console.JLine3Console;
 import dev.ein.cloudnet.managementsocket.shared.command.Response;
 import dev.ein.cloudnet.managementsocket.shared.command.Util;
+import eu.cloudnetservice.node.console.JLine3Console;
+import eu.cloudnetservice.node.console.handler.ConsoleInputHandler;
+import eu.cloudnetservice.node.console.handler.ConsoleTabCompleteHandler;
+import lombok.NonNull;
 import org.apache.commons.cli.*;
 import org.newsclub.net.unix.AFUNIXSocket;
 import org.newsclub.net.unix.AFUNIXSocketAddress;
 
 import java.io.File;
 import java.io.ObjectOutputStream;
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -33,7 +37,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class CommandLineInterface {
   public static void main(String[] args) throws Exception {
-    IConsole console = new JLine3Console();
+    JLine3Console console = new JLine3Console();
     CommandLineParser parser = new DefaultParser();
     Options options = new Options();
 
@@ -48,6 +52,7 @@ public class CommandLineInterface {
     ExecutorService socketExec = Executors.newFixedThreadPool(1);
     try {
       CommandLine commandLine = parser.parse(options, args);
+      boolean interactive = commandLine.getArgs().length > 0;
       File socketFile = new File(commandLine.getOptionValue("socket", "./control.socket"));
       try (AFUNIXSocket socket = AFUNIXSocket.newInstance()) {
         socket.connect(AFUNIXSocketAddress.of(socketFile), 5000);
@@ -55,8 +60,21 @@ public class CommandLineInterface {
         LinkedBlockingQueue<Response> responseQueue = new LinkedBlockingQueue<>();
         ConsoleHandler consoleHandler = new ConsoleHandler(socketExec, out, responseQueue, console);
         new ResponseConsoleWriterThread(socket, console, responseQueue, consoleHandler.getConsoleStopIssued()).start();
-        console.addCommandHandler(UUID.randomUUID(), consoleHandler::commandHandler);
-        console.addTabCompletionHandler(UUID.randomUUID(), consoleHandler::tabCompletionHandler);
+        console.addCommandHandler(UUID.randomUUID(), new ConsoleInputHandler() {
+          @Override
+          public void handleInput(@NonNull String s) {
+            consoleHandler.commandHandler(s);
+          }
+        });
+        console.addTabCompleteHandler(UUID.randomUUID(), new ConsoleTabCompleteHandler() {
+          @Override
+          public @NonNull Collection<String> completeInput(@NonNull String s) {
+            return consoleHandler.tabCompleteHandler(s);
+          }
+        });
+        if(interactive) {
+          consoleHandler.commandHandler(String.join(" ", commandLine.getArgs()));
+        }
         consoleHandler.waitUntilStop();
         console.close();
       }

@@ -10,16 +10,15 @@ allprojects {
 
     repositories {
         mavenCentral()
-        maven { url = 'https://repo.cloudnetservice.eu/repository/releases/' }
         maven { url = 'https://oss.sonatype.org/content/repositories/snapshots/' }
     }
 
     project.ext {
-        dependencyVersionCloudNet = '3.4.5-RELEASE'
-        dependencyVersionLombok = '1.18.22'
-        dependencyVersionJunixSocket = '2.8.3'
-
-        cliFile = 'cloudnet-client.jar'
+      dependencyVersionCloudNet = ''
+      dependencyVersionLombok = '1.18.36'
+      dependencyVersionJunixSocket = '2.8.3'
+      dependencyVersionJline = '3.28.0'
+      cliFile = 'cloudnet-client.jar'
     }
 }
 
@@ -31,13 +30,18 @@ subprojects {
         options.encoding = 'UTF-8'
     }
 
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
+    sourceCompatibility = 1.23
+    targetCompatibility = 1.23
 
     dependencies {
-        compileOnly group: 'org.projectlombok', name: 'lombok', version: dependencyVersionLombok
-        annotationProcessor group: 'org.projectlombok', name: 'lombok', version: dependencyVersionLombok
-        implementation group: 'com.kohlschutter.junixsocket', name: 'junixsocket-core', version: dependencyVersionJunixSocket
+      implementation(platform('eu.cloudnetservice.cloudnet:bom:4.0.0-RC11.2'))
+      annotationProcessor(platform('eu.cloudnetservice.cloudnet:bom:4.0.0-RC11.2'))
+      compileOnly("""org.projectlombok:lombok:${dependencyVersionLombok}""")
+      annotationProcessor("""org.projectlombok:lombok:${dependencyVersionLombok}""")
+      implementation("""com.kohlschutter.junixsocket:junixsocket-core:${dependencyVersionJunixSocket}""")
+      compileOnly('org.slf4j:slf4j-api:2.0.16')
+      compileOnly('eu.cloudnetservice.cloudnet:platform-inject-api')
+      annotationProcessor('eu.cloudnetservice.cloudnet:platform-inject-processor')
     }
 
     license {

@@ -16,6 +16,6 @@ shadowJar {
 
 dependencies {
     implementation project(':shared')
-    shadow group: 'de.dytanic.cloudnet', name: 'cloudnet', version: dependencyVersionCloudNet
+    implementation('eu.cloudnetservice.cloudnet:driver')
     shadow group: 'com.google.guava', name: 'guava', version: '31.0.1-jre'
 }

@@ -16,28 +16,9 @@
 
 package dev.ein.cloudnet.managementsocket.module;
 
-import lombok.AllArgsConstructor;
+import lombok.NonNull;
 
-import java.util.function.Consumer;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
-
-@AllArgsConstructor
-public class RemoteConsoleLogHandler extends Handler {
-    private Consumer<String> consumer;
-
-  @Override
-  public void publish(LogRecord record) {
-    consumer.accept(this.getFormatter().format(record));
-  }
-
-  @Override
-  public void flush() {
-
-  }
-
-  @Override
-  public void close() throws SecurityException {
-
-  }
+public record ServerSocketConfiguration(
+  @NonNull String socketFile
+) {
 }

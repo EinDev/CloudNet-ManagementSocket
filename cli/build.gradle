@@ -25,6 +25,10 @@ shadowJar {
 dependencies {
     implementation project(':shared')
     implementation group: 'commons-cli', name: 'commons-cli', version: '1.3.1'
-    implementation group: 'org.jline', name: 'jline', version: '3.9.0'
-    implementation group: 'de.dytanic.cloudnet', name: 'cloudnet', version: dependencyVersionCloudNet
+    implementation('eu.cloudnetservice.cloudnet:node') {
+      exclude group: "com.github.CloudNetService.cloud-command-framework", module: "cloud-annotations"
+      exclude group: "com.github.CloudNetService.cloud-command-framework", module: "cloud-core"
+      exclude group: "dev.derklaro.gulf", module: "gulf"
+    }
+    implementation('org.jline:jline-reader:3.28.0')
 }
