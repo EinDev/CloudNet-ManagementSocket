@@ -71,6 +71,9 @@ public class ConsoleHandler {
       if (!(result instanceof CommandExecutedResponse)) {
         console.writeLine(String.format("[ERROR] Got invalid class as a result: %s", result.getClass().getName()));
       }
+      for(String line : ((CommandExecutedResponse) result).getResponse()) {
+        console.writeLine(line);
+      }
     } catch (IOException e) {
       console.writeLine("[ERROR] An error occured sending the command");
       console.writeLine(Util.getStackTrace(e));

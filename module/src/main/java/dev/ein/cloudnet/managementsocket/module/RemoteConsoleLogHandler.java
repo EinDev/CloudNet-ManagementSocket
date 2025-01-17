@@ -16,28 +16,18 @@
 
 package dev.ein.cloudnet.managementsocket.module;
 
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.ConsoleAppender;
 import lombok.AllArgsConstructor;
 
 import java.util.function.Consumer;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
 
 @AllArgsConstructor
-public class RemoteConsoleLogHandler extends Handler {
+public class RemoteConsoleLogHandler extends ConsoleAppender<ILoggingEvent> {
     private Consumer<String> consumer;
 
   @Override
-  public void publish(LogRecord record) {
-    consumer.accept(this.getFormatter().format(record));
-  }
-
-  @Override
-  public void flush() {
-
-  }
-
-  @Override
-  public void close() throws SecurityException {
-
+  protected void append(ILoggingEvent eventObject) {
+    consumer.accept(new String(super.encoder.encode(eventObject)));
   }
 }

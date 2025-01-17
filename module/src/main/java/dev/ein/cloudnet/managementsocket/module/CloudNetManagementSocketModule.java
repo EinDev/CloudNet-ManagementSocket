@@ -16,6 +16,12 @@
 
 package dev.ein.cloudnet.managementsocket.module;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.filter.ThresholdFilter;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.ConsoleAppender;
 import com.google.common.eventbus.EventBus;
 import dev.ein.cloudnet.managementsocket.shared.command.Util;
 import dev.ein.cloudnet.managementsocket.shared.command.commands.DisconnectRequest;
@@ -27,16 +33,13 @@ import eu.cloudnetservice.driver.module.driver.DriverModule;
 import eu.cloudnetservice.driver.provider.ClusterNodeProvider;
 import lombok.Getter;
 import lombok.NonNull;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Handler;
-import java.util.logging.LogManager;
 
 public class CloudNetManagementSocketModule extends DriverModule {
-  protected static final Logger LOGGER = LoggerFactory.getLogger(CloudNetManagementSocketModule.class);
+  protected static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CloudNetManagementSocketModule.class);
 
   @Getter
   private static CloudNetManagementSocketModule instance;
@@ -44,7 +47,7 @@ public class CloudNetManagementSocketModule extends DriverModule {
   private ServerSocketThread serverSocketThread;
   @Getter
   private EventBus eventBus = new EventBus();
-  private Handler logHandler = new RemoteConsoleLogHandler(s -> eventBus.post(new LogMessage(s)));
+  private ConsoleAppender<ILoggingEvent> logHandler = new RemoteConsoleLogHandler(s -> eventBus.post(new LogMessage(s)));
 
   public CloudNetManagementSocketModule() {
     instance = this;
@@ -66,14 +69,29 @@ public class CloudNetManagementSocketModule extends DriverModule {
     File socketFile = new File(this.configuration.socketFile());
     serverSocketThread = new ServerSocketThread(socketFile, new CommandHandler(clusterNodeProvider));
     serverSocketThread.start();
-    LogManager.getLogManager().getLogger("").addHandler(logHandler);
+    LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+    Logger rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+
+    logHandler.setContext(loggerContext);
+    ThresholdFilter filter = new ThresholdFilter();
+    filter.setLevel("INFO");
+    logHandler.addFilter(filter);
+    PatternLayoutEncoder encoder = new PatternLayoutEncoder();
+    encoder.setPattern("%gray([%boldWhite(%d{dd.MM HH:mm:ss.SSS}%gray(]))) %gray(%levelColor(%-5level%gray(:))) %msg%n");
+    logHandler.setEncoder(encoder);
+    logHandler.start();
+    rootLogger.addAppender(logHandler);
   }
 
   @SuppressWarnings("unused")
   @ModuleTask(lifecycle = ModuleLifeCycle.STOPPED)
   public void teardownSocket() {
     ensureSocketStopped();
-    LogManager.getLogManager().getLogger("").removeHandler(logHandler);
+
+    LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+    Logger rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+    rootLogger.detachAppender(logHandler);
+    logHandler.stop();
   }
 
   private void ensureSocketStopped() {

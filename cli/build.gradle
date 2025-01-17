@@ -20,6 +20,7 @@ jar {
 
 shadowJar {
     archiveFileName.set(cliFile)
+  exclude("logback.xml")
 }
 
 dependencies {

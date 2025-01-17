@@ -44,11 +44,9 @@ public class CommandHandler {
 
   public Response handleCommand(Request c) throws ExecutionException, InterruptedException {
         if(c instanceof TextBasedRequest) {
+            LOGGER.info("Executing command: {}", ((TextBasedRequest) c).getCommand());
             String command = ((TextBasedRequest) c).getCommand();
           CompletableFuture<String[]> response = clusterNodeProvider.consoleCommandAsync(command).thenApply(info -> {
-            if (info == null) {
-              return new String[]{"Command not found"};
-            }
             return this.clusterNodeProvider.sendCommandLine(command).toArray(new String[0]);
           });
           return new CommandExecutedResponse(response.get());
